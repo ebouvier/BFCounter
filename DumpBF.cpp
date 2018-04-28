@@ -20,6 +20,10 @@ struct DumpBF_ProgramOptions {
   DumpBF_ProgramOptions() : k(0), verbose(false), quake(false) {}
 };
 
+bool DumpBF_SortByValue(pair<std::basic_string<char>,size_t> a, pair<std::basic_string<char>,size_t> b) {
+  return a.second > b.second;
+}
+
 void DumpBF_PrintUsage() {
   cerr << "BFCounter " << BFC_VERSION << endl << endl;
   cerr << "Writes k-mer occurrences into a tab-separated text file." << endl << endl;
@@ -182,6 +186,7 @@ void DumpBF_Normal(const DumpBF_ProgramOptions &opt) {
     hmap_t::iterator it,it_end;
     hmapL_t::const_iterator l_it,l_it_end;
     it_end = kmap.end();
+    vector<pair<std::basic_string<char>,size_t> > vec; 
     for (it = kmap.begin(); it != kmap.end(); ++it) {
       km = it->GetKey();
       cov = it->GetVal();
@@ -192,7 +197,12 @@ void DumpBF_Normal(const DumpBF_ProgramOptions &opt) {
 	}
       }
       km.toString(&buf[0]);
-      fprintf(of, "%s\t%zu\n",buf, cov);
+      vec.push_back(pair<std::basic_string<char>,size_t>(buf, cov));
+      //fprintf(of, "%s\t%zu\n",buf, cov);
+    }
+    sort(vec.begin(), vec.end(), DumpBF_SortByValue);
+    for (unsigned int i_vec = 0; i_vec < vec.size(); ++i_vec) {
+      fprintf(of, "%s\t%zu\n", &(vec[i_vec].first)[0], vec[i_vec].second);
     }
     
     fclose(of);
